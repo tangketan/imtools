@@ -306,7 +306,7 @@ namespace tkt{
 		else return false;
 	}
 
-		/*
+	/*
 	 fixpath() - Adds \ to the end of a path if not present.
 	*/
 	int fixpath(const char *inpath, char *outpath)
@@ -317,9 +317,9 @@ namespace tkt{
 
 		while(inpath[n]) n++;
 
-		if(inpath[n-1] != '\\')
+		if(inpath[n-1] != '\\' || inpath[n-1] != '/')
 		{
-			strcat(outpath,"\\");
+			strcat(outpath,"/");
 			return 1;
 		}
 
@@ -333,8 +333,11 @@ namespace tkt{
 	}
 
 	string getExtension(const string path){
-		LPTSTR pszExtension = PathFindExtension(path.c_str());
-		return string(pszExtension);
+		std::wstring stemp = std::wstring(path.begin(), path.end());
+		LPWSTR pszExtension = PathFindExtension(stemp.c_str());
+		std::wstring stmp(pszExtension);
+		string ret(stmp.begin(), stmp.end());
+		return ret;
 	}
 
 	/* List files (not including directory, just pure name) in a folder, in a naturally ascending order.
@@ -370,8 +373,8 @@ namespace tkt{
 		status = HANDLE = _findfirst( path, &file );
 		while( status != -1 )
 		{
-			status = _findnext( HANDLE, &file );
 			vFileName.push_back(string(file.name));
+			status = _findnext(HANDLE, &file);
 		}
 		_findclose( HANDLE );
 
@@ -413,5 +416,43 @@ namespace tkt{
 	*/
 	bool RemoveFile(const string fname){
 		return remove(fname.c_str())==0;
+	}
+	void SplitFilename (const std::string& str, std::string& path, std::string& file)
+	{
+		std::size_t found = str.find_last_of("/\\");
+		path = str.substr(0,found);
+		file = str.substr(found+1);		
+	}
+
+	void SplitFilename (const std::string& str, std::string& path, std::string& file, std::string& ext)
+	{
+		std::size_t found = str.find_last_of("/\\");
+		path = str.substr(0,found);
+		file = str.substr(found+1);		
+
+		found = file.find_last_of(".");
+		ext = file.substr(found);
+		file = file.substr(0,found);
+	}
+
+	struct FileParts
+	{
+		std::string path;
+		std::string name;
+		std::string ext;
+	};
+
+	FileParts fileparts(std::string filename)
+	{
+		int idx0 = filename.rfind("/");
+		if(idx0==std::string::npos) idx0 = filename.rfind("\\");
+		int idx1 = filename.rfind(".");
+
+		FileParts fp;
+		fp.path = filename.substr(0,idx0+1);
+		fp.name = filename.substr(idx0+1,idx1-idx0-1);
+		fp.ext  = filename.substr(idx1);
+
+		return fp;
 	}
 }
