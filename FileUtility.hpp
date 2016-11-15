@@ -456,3 +456,10 @@ namespace tkt{
 		return fp;
 	}
 }
+
+template<typename T>
+ostream& operator,(ostream& out, const T& val)
+{
+	out << ", " << val;
+	return out;
+}
