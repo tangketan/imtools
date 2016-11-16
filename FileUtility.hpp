@@ -8,13 +8,22 @@ Ketan Tang, tkt@ust.hk
 #include <string>
 #include <vector>
 #include <algorithm>
-#include <io.h>
 #include <cassert>
 #include <functional>
 #include <sstream>
-#include <direct.h>  // for mkdir
 #include <Shlwapi.h>  // for PathFindExtension
 #include <stdio.h>	// for remove
+#include <iomanip>  // std::setfill, std::setw
+#ifdef WIN32
+#include <io.h>
+#include <direct.h>  // for mkdir
+#include <wtypes.h>  // for SYSTEMTIME
+#else
+#include <sys/io.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#endif
+#pragma warning(disable:4996)
 #pragma comment(lib,"Shlwapi.lib")
 
 using namespace std;
@@ -284,6 +293,20 @@ namespace alphanum
 
 
 namespace tkt{
+	/////////////////////// string /////////////////////////////
+	void string2stringvec(string s, vector<string>& sv, string delimiter)
+	{
+		sv.clear();
+		size_t pos=0;
+		string token;
+		while((pos=s.find(delimiter))!=string::npos){
+			token=s.substr(0,pos);
+			sv.push_back(token);
+			s.erase(0,pos+delimiter.length());
+		}
+		sv.push_back(s);
+	}
+	
 	bool CompString(string s1, string s2)
 	{
 		if (s1.size() < s2.size())
@@ -351,7 +374,25 @@ namespace tkt{
 	vector<string> ListFiles(const char * path)
 	{
 		vector<string> vFileName;	
-
+#ifndef WIN32
+		//open a directory the POSIX way
+		DIR *dp;
+		struct dirent *ep;
+		dp = opendir(path);
+		
+		if(dp)
+		{
+			while((ep=readdir(dp))){
+				if(ep->d_name[0] != '.'){
+					vFileName.push_back(ep->d_name);
+				}
+			}
+			(void) closedir(dp);
+		}
+		else{
+			cout<<"opendir "<<path<<" fails!\n Error: "<<errno<<endl;
+		}
+#else		
 #if 0
 		// the old ugly way of doing this
 		WIN32_FIND_DATA fd;
@@ -377,7 +418,7 @@ namespace tkt{
 			status = _findnext(HANDLE, &file);
 		}
 		_findclose( HANDLE );
-
+#endif
 		sort(vFileName.begin(), vFileName.end(), AlphnumComp);
 		return vFileName;
 	}
@@ -400,12 +441,17 @@ namespace tkt{
 		return vFileName;
 	}
 
-	// true: succeed; false: fail
+	// true: succeed create or dir exists; false: fail to create
 	bool mkdir(const string path){
-		// if dir doesn't exist
+		// if dir doesn't exist, make it
+#ifdef WIN32		
 		if(_access(path.c_str(),0)!=0)
 			return _mkdir(path.c_str()) ==0;
-
+#else
+		if(opendir(inpath.c_str())==NULL){
+			return mkdir(inpath.c_str(), 0777) ==0;
+		}
+#endif
 		return true;  // dir already exists
 	}
 
@@ -454,6 +500,29 @@ namespace tkt{
 		fp.ext  = filename.substr(idx1);
 
 		return fp;
+	}
+	
+	////////////////////// time ///////////////////////
+	string getNow()
+	{
+		stringstream ss;
+#ifdef WIN32
+		SYSTEMTIME sysTime;
+		GetLocalTime(&sysTime);
+		ss	<<setw(2)<<setfill('0')<<int(sysTime.wMonth)<<"-"
+			<<setw(2)<<setfill('0')<<int(sysTime.wDay)<<"-"
+			<<setw(2)<<setfill('0')<<int(sysTime.wHour)<<"-"
+			<<setw(2)<<setfill('0')<<(int(sysTime.wMinute)/10)*10<<"-";
+#else
+		time_t rawtime;
+		time(&rawtime);
+		struct tm* timeinfo=localtime(&rawtime);
+		ss	<<setw(2)<<setfill('0')<<int(timeinfo->tm_mon)<<"-"
+			<<setw(2)<<setfill('0')<<int(timeinfo->tm_mday)<<"-"
+			<<setw(2)<<setfill('0')<<int(timeinfo->tm_hour)<<"-"
+			<<setw(2)<<setfill('0')<<(int(timeinfo->tm_min)/10)*10<<"-";
+#endif
+		return ss.str();
 	}
 }
 

@@ -211,6 +211,15 @@ void Plot::DrawAxis (IplImage *image)
 	snprintf(text, sizeof(text)-1, "%.0f", this->x_min );
 	cvPutText(image, text, cvPoint(bs, x_axis_pos + chh), 
 		      &font, text_color);
+
+        // scale ticks
+        int n_scales = 20;
+        double step = (x_max-x_min)/n_scales;
+        for(int i=0;i<n_scales;i++){
+            snprintf(text, sizeof(text)-1, "%d", int(i*step));
+            cvPutText(image, text, cvPoint(bs+i*step, x_axis_pos + chh*2),
+                          &font, text_color);
+        }
 }
 
 //添加对线型的支持
