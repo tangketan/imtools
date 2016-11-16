@@ -11,10 +11,9 @@ Ketan Tang, tkt@ust.hk
 #include <cassert>
 #include <functional>
 #include <sstream>
-#include <Shlwapi.h>  // for PathFindExtension
 #include <stdio.h>	// for remove
 #include <iomanip>  // std::setfill, std::setw
-#ifdef WIN32
+#ifdef _MSC_VER
 #include <io.h>
 #include <direct.h>  // for mkdir
 #include <wtypes.h>  // for SYSTEMTIME
@@ -24,7 +23,6 @@ Ketan Tang, tkt@ust.hk
 #include <sys/stat.h>
 #endif
 #pragma warning(disable:4996)
-#pragma comment(lib,"Shlwapi.lib")
 
 using namespace std;
 namespace alphanum
@@ -355,14 +353,6 @@ namespace tkt{
 		return string(outpath);
 	}
 
-	string getExtension(const string path){
-		std::wstring stemp = std::wstring(path.begin(), path.end());
-		LPWSTR pszExtension = PathFindExtension(stemp.c_str());
-		std::wstring stmp(pszExtension);
-		string ret(stmp.begin(), stmp.end());
-		return ret;
-	}
-
 	/* List files (not including directory, just pure name) in a folder, in a naturally ascending order.
 	**
 	** Example: 
@@ -442,14 +432,14 @@ namespace tkt{
 	}
 
 	// true: succeed create or dir exists; false: fail to create
-	bool mkdir(const string path){
+    bool makedir(const string path){
 		// if dir doesn't exist, make it
 #ifdef WIN32		
 		if(_access(path.c_str(),0)!=0)
 			return _mkdir(path.c_str()) ==0;
 #else
-		if(opendir(inpath.c_str())==NULL){
-			return mkdir(inpath.c_str(), 0777) ==0;
+        if(opendir(path.c_str())==NULL){
+            return mkdir(path.c_str(), 0777) ==0;
 		}
 #endif
 		return true;  // dir already exists
