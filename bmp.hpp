@@ -574,7 +574,7 @@ unsigned char* readPGM(const char* fname, int& width, int& height, bool is_plain
 		data = new unsigned char[width*height];
 		for (int i = 0; i < height; i++)
 		for (int j = 0; j < width; j++)
-			fscanf(fid, "%d\n", data[i*width + j]);
+			fscanf(fid, "%d\n", &data[i*width + j]);
 	}
 	else {
 		fid = fopen(fname, "rb");
