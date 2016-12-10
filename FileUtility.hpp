@@ -480,9 +480,9 @@ namespace tkt{
 
 	FileParts fileparts(std::string filename)
 	{
-		int idx0 = filename.rfind("/");
+		size_t idx0 = filename.rfind("/");
 		if(idx0==std::string::npos) idx0 = filename.rfind("\\");
-		int idx1 = filename.rfind(".");
+		size_t idx1 = filename.rfind(".");
 
 		FileParts fp;
 		fp.path = filename.substr(0,idx0+1);
@@ -502,7 +502,7 @@ namespace tkt{
 		ss	<<setw(2)<<setfill('0')<<int(sysTime.wMonth)<<"-"
 			<<setw(2)<<setfill('0')<<int(sysTime.wDay)<<"-"
 			<<setw(2)<<setfill('0')<<int(sysTime.wHour)<<"-"
-			<<setw(2)<<setfill('0')<<(int(sysTime.wMinute)/10)*10<<"-";
+			<<setw(2)<<setfill('0')<<(int(sysTime.wMinute)/10)*10;
 #else
 		time_t rawtime;
 		time(&rawtime);
@@ -510,7 +510,7 @@ namespace tkt{
 		ss	<<setw(2)<<setfill('0')<<int(timeinfo->tm_mon)<<"-"
 			<<setw(2)<<setfill('0')<<int(timeinfo->tm_mday)<<"-"
 			<<setw(2)<<setfill('0')<<int(timeinfo->tm_hour)<<"-"
-			<<setw(2)<<setfill('0')<<(int(timeinfo->tm_min)/10)*10<<"-";
+			<<setw(2)<<setfill('0')<<(int(timeinfo->tm_min)/10)*10;
 #endif
 		return ss.str();
 	}
