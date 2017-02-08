@@ -3,6 +3,7 @@
 //https://github.com/libing64/CPlot
 
 #include "plot.hpp"
+#include "pgm.h"
 #include <iostream>
 
 int main(int argc, char* argv[])
@@ -74,6 +75,16 @@ int main(int argc, char* argv[])
 	cvShowImage("hello", plot.Figure);
 	cvWaitKey(0);
 	//cvSaveImage("example.jpg", plot.Figure);
+
+	Mat im(plot.Figure), im16;
+	im.convertTo(im16, CV_16UC1, 255);
+	writePGM<unsigned short>("plot.pgm", im16, 1);
+
+	Mat im1, im2 = readPGM<ushort>("plot.pgm", 1);
+	im2.convertTo(im1, CV_8UC1, 1 / 255.0);
+	imshow("im1", im1);
+	waitKey();
+
 	return 0;
 }
 
