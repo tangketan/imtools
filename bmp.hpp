@@ -554,7 +554,7 @@ bool writePGM(const char* fname, const unsigned char* data, int width, int heigh
 	else {
 		fid = fopen(fname, "wb");
 		if (!fid) return false;
-		fprintf(fid, "P2\n%d %d\n255\n", width, height);
+		fprintf(fid, "P5\n%d %d\n255\n", width, height);
 		for (int i = 0; i < height; i++)
 			fwrite(data + i*width, 1, width, fid);
 	}
@@ -579,7 +579,7 @@ unsigned char* readPGM(const char* fname, int& width, int& height, bool is_plain
 	else {
 		fid = fopen(fname, "rb");
                 if (!fid) return NULL;
-		fscanf(fid, "P2\n%d %d\n255\n", &width, &height);
+		fscanf(fid, "P5\n%d %d\n255\n", &width, &height);
 		data = new unsigned char[width*height];
 		for (int i = 0; i < height; i++)
 			fread(data + i*width, 1, width, fid);

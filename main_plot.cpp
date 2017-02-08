@@ -77,10 +77,11 @@ int main(int argc, char* argv[])
 	//cvSaveImage("example.jpg", plot.Figure);
 
 	Mat im(plot.Figure), im16;
+	cvtColor(im, im, CV_BGR2GRAY);
 	im.convertTo(im16, CV_16UC1, 255);
-	writePGM<unsigned short>("plot.pgm", im16, 1);
+	writePGM<unsigned short>("plot.pgm", im16, 0);
 
-	Mat im1, im2 = readPGM<ushort>("plot.pgm", 1);
+	Mat im1, im2 = readPGM<ushort>("plot.pgm", 0);
 	im2.convertTo(im1, CV_8UC1, 1 / 255.0);
 	imshow("im1", im1);
 	waitKey();

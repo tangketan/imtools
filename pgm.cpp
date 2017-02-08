@@ -14,7 +14,7 @@ bool writePGM(const char* fname, const unsigned char* data, int width, int heigh
 	else {
 		fid = fopen(fname, "wb");
 		if (!fid) return false;
-		fprintf(fid, "P2\n%d %d\n255\n", width, height);
+		fprintf(fid, "P5\n%d %d\n255\n", width, height);
 		for (int i = 0; i < height; i++)
 			fwrite(data + i*width, 1, width, fid);
 	}
@@ -39,7 +39,7 @@ unsigned char* readPGM(const char* fname, int& width, int& height, bool is_plain
 	else {
 		fid = fopen(fname, "rb");
         if (!fid) return NULL;
-		fscanf(fid, "P2\n%d %d\n255\n", &width, &height);
+		fscanf(fid, "P5\n%d %d\n255\n", &width, &height);
 		data = new unsigned char[width*height];
 		for (int i = 0; i < height; i++)
 			fread(data + i*width, 1, width, fid);
@@ -68,10 +68,11 @@ bool writePGM(const char* fname, cv::Mat im, bool is_plainPGM)
 	else {
 		fid = fopen(fname, "wb");
 		if (!fid) return false;
-		fprintf(fid, "P2\n%d %d\n%d\n", width, height, sizeof(T)==1?255:65535);
+		fprintf(fid, "P5\n%d %d\n%d\n", width, height, sizeof(T)==1?255:65535);
 		for (int i = 0; i < height; i++)
-		for (int j = 0; j < width; j++)
-			fwrite(&(im.at<T>(i,j)), 1, 1, fid);
+		for (int j = 0; j < width;j++)
+			//fwrite(im.ptr<T>(i), sizeof(T), width, fid);
+			fwrite(&im.at<T>(i,j), sizeof(T), 1, fid);
 	}
 
 	fclose(fid);
@@ -104,11 +105,11 @@ cv::Mat readPGM(const char* fname, bool is_plainPGM)
 	else {
 		fid = fopen(fname, "rb");
         if (!fid) return im;
-		fscanf(fid, "P2\n%d %d\n255\n", &width, &height);
+		fscanf(fid, "P5\n%d %d\n255\n", &width, &height);
 		im = cv::Mat(height, width, cv::DataType<T>::type);
 		for (int i = 0; i < height; i++)
 		for (int j = 0; j < width; j++)
-			fread(&(im.at<T>(i,j)), 1, 1, fid);
+			fread(&(im.at<T>(i,j)), sizeof(T), 1, fid);
 	}
 
 	fclose(fid);
