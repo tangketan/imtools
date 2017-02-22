@@ -453,11 +453,36 @@ namespace tkt{
 	bool RemoveFile(const string fname){
 		return remove(fname.c_str())==0;
 	}
+
 	void SplitFilename (const std::string& str, std::string& path, std::string& file)
 	{
 		std::size_t found = str.find_last_of("/\\");
 		path = str.substr(0,found);
 		file = str.substr(found+1);		
+	}
+
+	bool RemoveFileInFolder(const string folder)
+	{
+		vector<string> files = ListFilesFull(folder, "*");
+
+		bool result = true;
+		for (size_t i = 0; i < files.size(); i++)
+		{
+			string path, name;
+			SplitFilename(files[i], path, name);
+			if (name == "." || name == "..")
+				continue;
+
+			result = RemoveFile(files[i]);
+			if (!result){
+				cout << "Removing file " << files[i] << " fails!\n";
+				return result;
+			}
+
+			cout << name <<" deleted!\n";
+		}
+
+		return result;
 	}
 
 	void SplitFilename (const std::string& str, std::string& path, std::string& file, std::string& ext)

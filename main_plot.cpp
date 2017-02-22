@@ -4,6 +4,7 @@
 
 #include "plot.hpp"
 #include "pgm.h"
+#include "FileUtility.hpp"
 #include <iostream>
 
 int main(int argc, char* argv[])
@@ -76,6 +77,7 @@ int main(int argc, char* argv[])
 	cvWaitKey(0);
 	//cvSaveImage("example.jpg", plot.Figure);
 
+	// write and read 16 bit pgm
 	Mat im(plot.Figure), im16;
 	cvtColor(im, im, CV_BGR2GRAY);
 	im.convertTo(im16, CV_16UC1, 255);
@@ -85,6 +87,12 @@ int main(int argc, char* argv[])
 	im2.convertTo(im1, CV_8UC1, 1 / 255.0);
 	imshow("im1", im1);
 	waitKey();
+
+	// delete all files in a folder
+	if (argc > 1){
+		tkt::RemoveFileInFolder(argv[1]);
+	}
+
 
 	return 0;
 }
