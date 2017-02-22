@@ -424,9 +424,12 @@ namespace tkt{
 	vector<string> ListFilesFull(const string pathin, const char* ext){
 		string path = fixpath(pathin);
 		vector<string> vFileName = ListFiles(path+ext);
-		for (size_t i=0; i<vFileName.size(); i++)
+		for (int i = vFileName.size()-1; i>=0; i--)
 		{
-			vFileName[i] = path+vFileName[i];
+			if (vFileName[i] == "." || vFileName[i] == ".."){
+				vFileName.erase(vFileName.begin() + i);
+			}else
+				vFileName[i] = path + vFileName[i];
 		}
 		return vFileName;
 	}
@@ -454,13 +457,6 @@ namespace tkt{
 		return remove(fname.c_str())==0;
 	}
 
-	void SplitFilename (const std::string& str, std::string& path, std::string& file)
-	{
-		std::size_t found = str.find_last_of("/\\");
-		path = str.substr(0,found);
-		file = str.substr(found+1);		
-	}
-
 	bool RemoveFileInFolder(const string folder)
 	{
 		vector<string> files = ListFilesFull(folder, "*");
@@ -468,21 +464,23 @@ namespace tkt{
 		bool result = true;
 		for (size_t i = 0; i < files.size(); i++)
 		{
-			string path, name;
-			SplitFilename(files[i], path, name);
-			if (name == "." || name == "..")
-				continue;
-
 			result = RemoveFile(files[i]);
 			if (!result){
 				cout << "Removing file " << files[i] << " fails!\n";
 				return result;
 			}
 
-			cout << name <<" deleted!\n";
+			cout << files[i] <<" deleted!\n";
 		}
 
 		return result;
+	}
+
+	void SplitFilename (const std::string& str, std::string& path, std::string& file)
+	{
+		std::size_t found = str.find_last_of("/\\");
+		path = str.substr(0,found);
+		file = str.substr(found+1);		
 	}
 
 	void SplitFilename (const std::string& str, std::string& path, std::string& file, std::string& ext)
