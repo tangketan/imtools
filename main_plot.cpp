@@ -4,11 +4,33 @@
 
 #include "plot.hpp"
 #include "pgm.h"
-#include "FileUtility.hpp"
+#include "FileUtility.h"
 #include <iostream>
 
 int main(int argc, char* argv[])
 {
+    if (argc > 1){
+#if 0
+        tkt::RemoveFileInFolder(argv[1]);
+#endif
+#if 0
+        if (tkt::isdir(argv[1])) cout << "is dir\n";
+        else cout << "is file\n";
+#endif
+
+#if 1
+        vector<string> v = tkt::ListDir(argv[1]);
+        for (size_t i = 0; i < v.size(); i++)
+        {
+            cout << v[i] << endl;
+        }
+
+#endif
+
+        return 0;
+    }
+
+
 	const int Cnt = 80;
 	double X[Cnt] = {0};
 	double Y[Cnt] = {0};
@@ -88,10 +110,6 @@ int main(int argc, char* argv[])
 	imshow("im1", im1);
 	waitKey();
 
-	// delete all files in a folder
-	if (argc > 1){
-		tkt::RemoveFileInFolder(argv[1]);
-	}
 
 
 	return 0;

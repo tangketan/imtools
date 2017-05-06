@@ -8,7 +8,7 @@ endif(COMMAND cmake_policy)
 FIND_PACKAGE( OpenCV REQUIRED )
 
 # Declare the target (an executable)
-ADD_EXECUTABLE(plot_sample  main.cpp plot.h)
+ADD_EXECUTABLE(plot_sample main_plot.cpp pgm.cpp)
 
 TARGET_LINK_LIBRARIES(plot_sample ${OpenCV_LIBS})
 
