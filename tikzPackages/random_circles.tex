@@ -1,0 +1,15 @@
+\documentclass[tikz, border=2mm]{standalone}
+
+\begin{document}
+
+\begin{tikzpicture}
+
+\pgfmathsetseed{24122019}
+\foreach \p in {1,...,120}
+{ 
+	\draw (3*rand,3*rand) circle (3pt);
+}
+
+\end{tikzpicture}
+
+\end{document}
