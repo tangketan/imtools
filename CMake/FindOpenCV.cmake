@@ -5,7 +5,9 @@
 #
 ## 1: Setup:
 # The following variables are optionally searched for defaults
-#  OpenCV_DIR:            Base directory of OpenCv tree to use.
+# 1. set OpenCV_DIR to where you install opencv:       Base directory of OpenCv tree to use.
+# 2. copy OpenCVConfig.cmake from sources\cmake to build\
+# 3. copy this file (FindOpenCV.cmake) to cmake-3.x\share\cmake-3.x\Modules
 #
 ## 2: Variable
 # The following are set after configuration is done: 
