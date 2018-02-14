@@ -8,14 +8,15 @@ CFLAGS=/I. /Iinclude /I"%OPENCVROOT%\build\include" /MD /W3 /EHsc /D_CRT_SECURE_
 LFLAGS=/LIBPATH:"%OPENCVROOT%\build\x86\vc12\lib" opencv_calib3d2411.lib opencv_contrib2411.lib opencv_core2411.lib opencv_features2d2411.lib opencv_flann2411.lib opencv_gpu2411.lib opencv_highgui2411.lib opencv_imgproc2411.lib opencv_legacy2411.lib  opencv_ml2411.lib opencv_nonfree2411.lib opencv_objdetect2411.lib opencv_ocl2411.lib opencv_photo2411.lib opencv_stitching2411.lib opencv_superres2411.lib opencv_ts2411.lib opencv_video2411.lib
 
 # modify things here
-OBJS=main_plot.obj
-SRCS=src/main_plot.cpp
+module_name = bmp2pgm
+OBJS=$(module_name).obj
+SRCS=$(module_name).cpp
 
 
-all: plot.exe
+all: $(module_name).exe
 
-plot.exe: $(OBJS)
-	$(LINK) /out:plot.exe $(LFLAGS) $(OBJS)
+$(module_name).exe: $(OBJS)
+	$(LINK) /out:$(module_name).exe $(LFLAGS) $(OBJS)
 
 $(OBJS): 
 	$(CC) $(CFLAGS) $(SRCS)
