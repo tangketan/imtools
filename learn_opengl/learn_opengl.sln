@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "get_version", "get_version\get_version.vcxproj", "{4D4BF2E2-7D3B-4408-9AA1-473EE96AA0D2}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rotate_triangle", "rotate_triangle\rotate_triangle.vcxproj", "{8FED2837-5B98-4C38-9624-D896460272CA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4D4BF2E2-7D3B-4408-9AA1-473EE96AA0D2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4D4BF2E2-7D3B-4408-9AA1-473EE96AA0D2}.Debug|Win32.Build.0 = Debug|Win32
+		{4D4BF2E2-7D3B-4408-9AA1-473EE96AA0D2}.Release|Win32.ActiveCfg = Release|Win32
+		{4D4BF2E2-7D3B-4408-9AA1-473EE96AA0D2}.Release|Win32.Build.0 = Release|Win32
+		{8FED2837-5B98-4C38-9624-D896460272CA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8FED2837-5B98-4C38-9624-D896460272CA}.Debug|Win32.Build.0 = Debug|Win32
+		{8FED2837-5B98-4C38-9624-D896460272CA}.Release|Win32.ActiveCfg = Release|Win32
+		{8FED2837-5B98-4C38-9624-D896460272CA}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
