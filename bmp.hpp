@@ -13,15 +13,19 @@
 typedef unsigned short	BMP_WORD; 
 typedef unsigned int	BMP_DWORD; 
 typedef int				BMP_LONG; 
- 
-typedef struct { 
+
+#pragma pack(1)
+// file header has to strictly 14 bytes,
+// otherwise windows photo viewer won't recognize RGB image
+typedef struct __pack__ { 
 	BMP_WORD	bfType; 
 	BMP_DWORD	bfSize; 
 	BMP_WORD	bfReserved1; 
 	BMP_WORD	bfReserved2; 
 	BMP_DWORD	bfOffBits; 
 } BMP_BITMAPFILEHEADER; 
- 
+
+// info header has to be strictly 40 bytes 
 typedef struct { 
 	BMP_DWORD	biSize; 
 	BMP_LONG	biWidth; 
@@ -35,6 +39,7 @@ typedef struct {
 	BMP_DWORD	biClrUsed; 
 	BMP_DWORD	biClrImportant; 
 } BMP_BITMAPINFOHEADER; 
+#pragma pack()
 
 #ifndef MIN
 #define MIN(x,y) ((x)<(y)? (x):(y))
