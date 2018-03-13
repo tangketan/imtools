@@ -186,31 +186,50 @@ unsigned char* readBMP(char*	fname,
 	}
 
 	return data; 
-} 
+}
+
+typedef enum{
+	CV_GRAY = 0,
+	CV_RGB = 1,
+	CV_BGR = 2,
+}e_color_codes;
  
-void writeBMP(char*				iname,
+int writeBMP(char*				iname,
 			  int				width, 
 			  int				height, 
-			  unsigned char*	data) 
+              int               channels,
+			  unsigned char*	data,
+			  e_color_codes 	color_code)
 { 
+    if(channels!=3 && channels!=1){
+        printf("Input channels should be 3 or 1!\n");
+        return 0;
+    }
+    
 	int bytes, pad;
-	bytes = width * 3;
+	int nPaletteBits = 0;
+	bytes = width * channels;
 	pad = (bytes%4) ? 4-(bytes%4) : 0;
 	bytes += pad;
 	bytes *= height;
 
+	// for grayscale image, must save the palette
+	unsigned char * pPalette = NULL;
+	if (channels==1)
+		pPalette = createPalette(nPaletteBits);
+
 	bmfh.bfType = 0x4d42;    // "BM"
-	bmfh.bfSize = sizeof(BMP_BITMAPFILEHEADER) + sizeof(BMP_BITMAPINFOHEADER) + bytes;
+	bmfh.bfSize = sizeof(BMP_BITMAPFILEHEADER)+sizeof(BMP_BITMAPINFOHEADER) + nPaletteBits + bytes;
 	bmfh.bfReserved1 = 0;
 	bmfh.bfReserved2 = 0;
-	bmfh.bfOffBits = 14 + sizeof(BMP_BITMAPINFOHEADER);
+	bmfh.bfOffBits = sizeof(BMP_BITMAPFILEHEADER)+sizeof(BMP_BITMAPINFOHEADER)+nPaletteBits;
 
 
 	bmih.biSize = sizeof(BMP_BITMAPINFOHEADER);
 	bmih.biWidth = width;
 	bmih.biHeight = height;
 	bmih.biPlanes = 1;
-	bmih.biBitCount = 24;
+	bmih.biBitCount = 8*channels;
 	bmih.biCompression = BMP_BI_RGB;
 	bmih.biSizeImage = 0;
 	bmih.biXPelsPerMeter = (int)(100 / 2.54 * 72);
@@ -218,7 +237,7 @@ void writeBMP(char*				iname,
 	bmih.biClrUsed = 0;
 	bmih.biClrImportant = 0;
 
-        FILE *outFile=fopen(iname,"wb");
+    FILE *outFile=fopen(iname,"wb");
 	
 	fwrite( &(bmfh.bfType), 2, 1, outFile); 
 	fwrite( &(bmfh.bfSize), 4, 1, outFile); 
@@ -228,23 +247,42 @@ void writeBMP(char*				iname,
 
 	fwrite(&bmih, sizeof(BMP_BITMAPINFOHEADER), 1, outFile); 
 
-	bytes /= height;
-	unsigned char* scanline = new unsigned char [bytes];
-	for ( int j = 0; j < height; ++j )
+	if (channels == 3)
 	{
-		memcpy( scanline, data + j*3*width, bytes );
-		for ( int i = 0; i < width; ++i )
+		bytes /= height;
+		unsigned char* scanline = new unsigned char[bytes];
+		for (int j = height-1 ; j >= 0; --j)
 		{
-			unsigned char temp = scanline[i*3];
-			scanline[i*3] = scanline[i*3+2];
-			scanline[i*3+2] = temp;
+			if (color_code == CV_BGR){
+				// convert from BGR to RGB
+				memcpy(scanline, data + j * 3 * width, bytes);
+				for (int i = 0; i < width; ++i)
+				{
+					unsigned char temp = scanline[i * 3];
+					scanline[i * 3] = scanline[i * 3 + 2];
+					scanline[i * 3 + 2] = temp;
+				}
+			}
+			else if (color_code == CV_RGB){
+				memcpy(scanline, data + j * 3 * width, 3 * width);
+			}
+			fwrite(scanline, bytes, 1, outFile);
 		}
-		fwrite( scanline, bytes, 1, outFile);
+		delete[] scanline;
+	}
+	else
+	{
+		fwrite(pPalette, nPaletteBits, 1, outFile);
+		fseek(outFile, bmfh.bfOffBits, SEEK_SET);
+
+		bytes /= height;
+		for (int i = height - 1; i >= 0; i--)   //should from bottom row to top: http://en.wikipedia.org/wiki/BMP_file_format
+			fwrite(data + i*width, bytes, 1, outFile);
 	}
 
-	delete [] scanline;
-
 	fclose(outFile);
+    
+    return 1;
 } 
 
 
@@ -431,63 +469,7 @@ unsigned char* readBMPGray3(const char*	fname, FILE ** aFile, int& pos,
 	fread( data, width, 1, file );	
 
 	return data; 
-} 
- 
-void writeBMPGray(char*				iname,
-			  int				width, 
-			  int				height, 
-			  unsigned char*	data)
-{ 
-	int bytes, pad, nPaletteBits;
-	bytes = width;
-	pad = (bytes%4) ? 4-(bytes%4) : 0;
-	bytes += pad;
-	bytes *= height;
-
-	unsigned char * pPalette;
-	pPalette = createPalette(nPaletteBits);
-
-	bmfh.bfType = 0x4d42;    // "BM"
-	bmfh.bfSize = sizeof(BMP_BITMAPFILEHEADER) + sizeof(BMP_BITMAPINFOHEADER) + nPaletteBits + bytes;
-	bmfh.bfReserved1 = 0;
-	bmfh.bfReserved2 = 0;
-	bmfh.bfOffBits = sizeof(BMP_BITMAPFILEHEADER) + sizeof(BMP_BITMAPINFOHEADER) + nPaletteBits;
-
-	bmih.biSize = sizeof(BMP_BITMAPINFOHEADER);
-	bmih.biWidth = width;
-	bmih.biHeight = height;
-	bmih.biPlanes = 1;
-	bmih.biBitCount = 8;  //tkt: 8 bit/pixel
-	bmih.biCompression = BMP_BI_RGB;  //no compression
-	bmih.biSizeImage = 0;
-	bmih.biXPelsPerMeter = (int)(100 / 2.54 * 72);
-	bmih.biYPelsPerMeter = (int)(100 / 2.54 * 72);
-	bmih.biClrUsed = 0;
-	bmih.biClrImportant = 0;
-
-        FILE *outFile=fopen(iname,"wb");
-	
-	fwrite( &(bmfh.bfType), 2, 1, outFile); 
-	fwrite( &(bmfh.bfSize), 4, 1, outFile); 
-	fwrite( &(bmfh.bfReserved1), 2, 1, outFile); 
-	fwrite( &(bmfh.bfReserved2), 2, 1, outFile); 
-	fwrite( &(bmfh.bfOffBits), 4, 1, outFile); 	
-
-	fwrite(&bmih, sizeof(BMP_BITMAPINFOHEADER), 1, outFile); 
-
-
-	fwrite(pPalette, nPaletteBits, 1, outFile);
-	//printf("Current pos: %d\nbfOffBits: %d\n",ftell(outFile), bmfh.bfOffBits);
-	fseek(outFile, bmfh.bfOffBits, SEEK_SET);
-	
-
-	//fwrite(data, bytes, 1, outFile);
-	for (int i=height-1; i>=0; i--)   //should from bottom row to top: http://en.wikipedia.org/wiki/BMP_file_format
-		fwrite( data+i*width, width, 1, outFile );	
-
-	fclose(outFile);
-	free(pPalette);
-} 
+}
 
 
 FILE * genBMPHeader(char*				iname,
@@ -539,52 +521,3 @@ FILE * genBMPHeader(char*				iname,
 
 	return outFile;	
 } 
-
-bool writePGM(const char* fname, const unsigned char* data, int width, int height, bool is_plainPGM=true)
-{
-	FILE* fid;
-	if (is_plainPGM){
-		fid = fopen(fname, "w");
-		if (!fid) return false;
-		fprintf(fid, "P2\n%d %d\n255\n", width, height);
-		for (int i = 0; i < height; i++)
-		for (int j = 0; j < width; j++)
-			fprintf(fid, "%d\n", data[i*width + j]);
-	}
-	else {
-		fid = fopen(fname, "wb");
-		if (!fid) return false;
-		fprintf(fid, "P5\n%d %d\n255\n", width, height);
-		for (int i = 0; i < height; i++)
-			fwrite(data + i*width, 1, width, fid);
-	}
-
-	fclose(fid);
-	return true;
-}
-
-unsigned char* readPGM(const char* fname, int& width, int& height, bool is_plainPGM=true)
-{
-	FILE* fid;
-	unsigned char* data;
-	if (is_plainPGM){
-		fid = fopen(fname, "r");
-                if (!fid) return NULL;
-		fscanf(fid, "P2\n%d %d\n255\n", &width, &height);
-		data = new unsigned char[width*height];
-		for (int i = 0; i < height; i++)
-		for (int j = 0; j < width; j++)
-			fscanf(fid, "%hhu\n", &data[i*width + j]);
-	}
-	else {
-		fid = fopen(fname, "rb");
-                if (!fid) return NULL;
-		fscanf(fid, "P5\n%d %d\n255\n", &width, &height);
-		data = new unsigned char[width*height];
-		for (int i = 0; i < height; i++)
-			fread(data + i*width, 1, width, fid);
-	}
-
-	fclose(fid);
-	return data;
-}

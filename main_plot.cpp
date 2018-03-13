@@ -5,6 +5,7 @@
 #include "plot.hpp"
 #include "pgm.h"
 #include "FileUtility.h"
+#include "bmp.hpp"
 #include <iostream>
 
 int main(int argc, char* argv[])
@@ -108,10 +109,13 @@ int main(int argc, char* argv[])
 	Mat im1, im2 = readPGM<ushort>("plot.pgm", 0);
 	im2.convertTo(im1, CV_8UC1, 1 / 255.0);
 	imshow("im1", im1);
+
+    // write color and grayscale bmp
+	Mat imcolor(plot.Figure);
+	writeBMP("bmp_color.bmp", imcolor.cols, imcolor.rows, imcolor.channels(), imcolor.data, CV_RGB);
+	writeBMP("bmp_gray.bmp", im.cols, im.rows, im.channels(), im.data, CV_GRAY);
+
 	waitKey();
-
-
-
 	return 0;
 }
 
