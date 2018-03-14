@@ -41,6 +41,15 @@ typedef struct {
 } BMP_BITMAPINFOHEADER; 
 #pragma pack()
 
+BMP_BITMAPFILEHEADER bmfh;
+BMP_BITMAPINFOHEADER bmih;
+
+typedef enum{
+	CV_GRAY = 0,
+	CV_RGB = 1,
+	CV_BGR = 2,
+}e_color_codes;
+
 #ifndef MIN
 #define MIN(x,y) ((x)<(y)? (x):(y))
 #endif // !MIN
@@ -84,8 +93,6 @@ template <class T1> void memset_2d(T1 ** Dst, int val, int height, int width)
 			Dst[i][j] = (T1)val;
 }
 
-
-
 unsigned char * createPalette(int& nPaletteBits)
 {
 	int i, i1;
@@ -100,15 +107,13 @@ unsigned char * createPalette(int& nPaletteBits)
 
 	return pPalette;
 }
- 
-BMP_BITMAPFILEHEADER bmfh; 
-BMP_BITMAPINFOHEADER bmih; 
 
 unsigned char* readBMP(char*	fname, 
 					   int&		width,
-					   int&		height)
+					   int&		height,
+					   int&		channels)
 { 
-        FILE* file=fopen(fname,"rb");
+    FILE* file=fopen(fname,"rb");
 	BMP_DWORD pos; 
  
 	if ( file == NULL )  
@@ -116,36 +121,31 @@ unsigned char* readBMP(char*	fname,
 		printf("File cannot be opened");
 		return NULL; 
 	}
-	 
 
-	fread( &(bmfh.bfType), sizeof(unsigned short), 1, file); 
-	fread( &(bmfh.bfSize), sizeof(unsigned int), 1, file); 
-	fread( &(bmfh.bfReserved1), sizeof(unsigned short), 1, file); 
-	fread( &(bmfh.bfReserved2), sizeof(unsigned short), 1, file); 
-	fread( &(bmfh.bfOffBits), sizeof(unsigned int), 1, file); 
+	fread(&bmfh, sizeof(BMP_BITMAPFILEHEADER), 1, file);
+	fread(&bmih, sizeof(BMP_BITMAPINFOHEADER), 1, file);
 
-	pos = bmfh.bfOffBits; 
  
-	fread( &bmih, sizeof(BMP_BITMAPINFOHEADER), 1, file ); 
-
-
 	// error checking
 	if ( bmfh.bfType!= 0x4d42 ) {	// "BM" actually
 		printf("Type Error!\n");
 		return NULL;
 	}
-	if ( bmih.biBitCount != 24 )
+	if ( bmih.biBitCount != 24 && bmih.biBitCount!=8 )
 	{
 		printf("bmih.biBitCount = %d\n", bmih.biBitCount );  
 		return NULL; 
 	}
 
-	fseek( file, pos, SEEK_SET ); 
+	pos = bmfh.bfOffBits;
+	fseek(file, pos, SEEK_SET);
  
 	width = bmih.biWidth; 
 	height = bmih.biHeight; 
- 
-	int padWidth = width * 3; 
+	channels = bmih.biBitCount / 8;
+
+	int padWidth = width * channels; 
+	int step = padWidth;
 	int pad = 0; 
 	if ( padWidth % 4 != 0 ) 
 	{ 
@@ -154,51 +154,33 @@ unsigned char* readBMP(char*	fname,
 	} 
 	int bytes = height*padWidth; 
  
-	unsigned char *data = new unsigned char [bytes]; 
+	unsigned char *datain = (unsigned char*)malloc(bytes);
 
-	int result = fread( data, bytes, 1, file ); 
+	int result = fread( datain, bytes, 1, file ); 
 	
 	if (!result) {
-		delete [] data;
+		free(datain);
 		return NULL;
 	}
 
 	fclose( file );
 	
-	// shuffle bitmap data such that it is (R,G,B) tuples in row-major order
-	int i, j;
-	j = 0;
-	unsigned char temp;
-	unsigned char* in;
-	unsigned char* out;
+	unsigned char *data = (unsigned char*)malloc(bytes);
+	unsigned char* in = datain;
+	unsigned char* out = data + (height - 1)*step;
 
-	in = data;
-	out = data;
-
-	for ( j = 0; j < height; ++j )
+	for (int i = height - 1; i >= 0; i--)   //BMP stores image from bottom to top, so we should read it reversely
 	{
-		for ( i = 0; i < width; ++i )
-		{
-			out[1] = in[1];
-			temp = in[2];
-			out[2] = in[0];
-			out[0] = temp;
-
-			in += 3;
-			out += 3;
-		}
-		in += pad;
+		memcpy(out, in, padWidth);
+		in += padWidth;
+		out -= step;
 	}
+
+	free(datain);
 
 	return data; 
 }
 
-typedef enum{
-	CV_GRAY = 0,
-	CV_RGB = 1,
-	CV_BGR = 2,
-}e_color_codes;
- 
 int writeBMP(char*				iname,
 			  int				width, 
 			  int				height, 
@@ -244,12 +226,7 @@ int writeBMP(char*				iname,
 
     FILE *outFile=fopen(iname,"wb");
 	
-	fwrite( &(bmfh.bfType), 2, 1, outFile); 
-	fwrite( &(bmfh.bfSize), 4, 1, outFile); 
-	fwrite( &(bmfh.bfReserved1), 2, 1, outFile); 
-	fwrite( &(bmfh.bfReserved2), 2, 1, outFile); 
-	fwrite( &(bmfh.bfOffBits), 4, 1, outFile); 
-
+	fwrite(&bmfh, sizeof(BMP_BITMAPFILEHEADER), 1, outFile);
 	fwrite(&bmih, sizeof(BMP_BITMAPINFOHEADER), 1, outFile); 
 
 	if (channels == 3)
@@ -288,76 +265,6 @@ int writeBMP(char*				iname,
 	fclose(outFile);
     
     return 1;
-} 
-
-
-unsigned char* readBMPGray(char*	fname, 
-					   int&		width,
-					   int&		height)					  
-{ 
-        FILE* file=fopen(fname,"rb");
-	BMP_DWORD pos; 
- 
-	if ( file == NULL )  
-	{
-		printf("File cannot be opened");
-		return NULL; 
-	}
-	 
-
-	fread( &(bmfh.bfType), sizeof(unsigned short), 1, file); 
-	fread( &(bmfh.bfSize), sizeof(unsigned int), 1, file); 
-	fread( &(bmfh.bfReserved1), sizeof(unsigned short), 1, file); 
-	fread( &(bmfh.bfReserved2), sizeof(unsigned short), 1, file); 
-	fread( &(bmfh.bfOffBits), sizeof(unsigned int), 1, file); 
-
-	pos = bmfh.bfOffBits; 
-	
- 
-	fread( &bmih, sizeof(BMP_BITMAPINFOHEADER), 1, file ); 
-
-	//int nPaletteBits = bmfh.bfOffBits - (sizeof(bmfh)+sizeof(bmih));
-	//unsigned char *pPalette = (unsigned char *)malloc(nPaletteBits* sizeof(unsigned char));
-	//fread(pPalette, nPaletteBits, 1, file);
-
-	// error checking
-	if ( bmfh.bfType!= 0x4d42 ) {	// "BM" actually
-		printf("Type Error!\n");
-		return NULL;
-	}
-	if ( bmih.biBitCount != 8 )  //tkt: 8 bit/pixel for grayscale image
-	{
-		printf("bmih.biBitCount = %d\n", bmih.biBitCount );  
-		return NULL; 
-	}
-
-	fseek( file, pos, SEEK_SET ); 	
- 
-	width = bmih.biWidth; 
-	height = bmih.biHeight; 
- 
-	int padWidth = width; 
-	int pad = 0; 
-	if ( padWidth % 4 != 0 ) 
-	{ 
-		pad = 4 - (padWidth % 4); 
-		padWidth += pad; 
-	} 
-	int bytes = height*padWidth; 
- 
-	unsigned char *data = new unsigned char [bytes]; 
-
-	/*int result = fread( data, bytes, 1, file ); 	
-	if (!result) {
-		delete [] data;
-		return NULL;
-	}*/
-	for (int i=height-1; i>=0; i--)   //tkt: don't know why, should be it reversely
-		fread( data+i*width, width, 1, file );	
-
-	fclose( file );	
-
-	return data; 
 } 
 
 // read a specific row of BMP grayscale image
@@ -428,7 +335,7 @@ unsigned char* readBMPGray3(const char*	fname, FILE ** aFile, int& pos,
 	FILE * file = *aFile;
 	if (file==NULL)
 	{
-                file=fopen(fname,"rb");
+		file = fopen(fname, "rb");
 		if ( file == NULL )  
 		{
 			printf("File cannot be opened!\n");

@@ -115,6 +115,13 @@ int main(int argc, char* argv[])
 	writeBMP("bmp_color.bmp", imcolor.cols, imcolor.rows, imcolor.channels(), imcolor.data, CV_RGB);
 	writeBMP("bmp_gray.bmp", im.cols, im.rows, im.channels(), im.data, CV_GRAY);
 
+	// read color and grayscale bmp
+	int w, h, c;
+	uchar* imdata = readBMP("bmp_gray.bmp", w, h, c);
+	Mat imtest(h, w, CV_8UC(c), imdata);
+	printf("w,h,c: %d %d %d\n", w, h, c);
+	imshow("imtest", imtest);
+
 	waitKey();
 	return 0;
 }
