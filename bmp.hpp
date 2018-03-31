@@ -223,7 +223,7 @@ int writeBMP(char*				iname,
 	bmih.biYPelsPerMeter = (int)(100 / 2.54 * 72);
 	bmih.biClrUsed = 0;
 	bmih.biClrImportant = 0;
-
+#if WRITE_FILE_MULTIPLE_TIMES
     FILE *outFile=fopen(iname,"wb");
 	
 	fwrite(&bmfh, sizeof(BMP_BITMAPFILEHEADER), 1, outFile);
@@ -263,7 +263,53 @@ int writeBMP(char*				iname,
 	}
 
 	fclose(outFile);
-    
+#else
+    unsigned char* buf = (unsigned char*)malloc(bmfh.bfSize);
+    unsigned char* p_buf = buf;
+    memcpy(p_buf, &bmfh, sizeof(bmfh));
+    p_buf += sizeof(bmfh);
+    memcpy(p_buf, &bmih, sizeof(bmih));
+    p_buf += sizeof(bmih);
+
+    if (channels == 3)
+    {
+        bytes /= height;
+        int width3 = width * 3;
+        unsigned char* p_data = data + (height-1) * width3;
+        for (int j = height - 1; j >= 0; --j, p_data-=width3,p_buf+=bytes)
+        {
+            if (color_code == CV_BGR){
+                // convert from BGR to RGB
+                for (int i = 0; i < width; ++i)
+                {
+                    p_buf[i * 3 + 2] = p_data[i*3+0];
+                    p_buf[i * 3 + 1] = p_data[i*3+1];
+                    p_buf[i * 3 + 0] = p_data[i*3+2];
+                }
+            }
+            else if (color_code == CV_RGB){
+                memcpy(p_buf, data + j * 3 * width, 3 * width);
+            }
+        }
+    }
+    else
+    {
+        memcpy(p_buf, pPalette, nPaletteBits);
+        p_buf += bmfh.bfOffBits - (p_buf - buf);
+
+        bytes /= height;
+        for (int i = height - 1; i >= 0; i--)   //should from bottom row to top: http://en.wikipedia.org/wiki/BMP_file_format
+        {
+            memcpy(p_buf, data + i*width, bytes);
+            p_buf += bytes;
+        }
+    }
+
+    FILE *outFile = fopen(iname, "wb");
+    fwrite(buf, bmfh.bfSize, 1, outFile);
+    fclose(outFile);
+    free(buf);
+#endif
     return 1;
 } 
 

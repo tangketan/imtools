@@ -112,15 +112,24 @@ int main(int argc, char* argv[])
 
     // write color and grayscale bmp
 	Mat imcolor(plot.Figure);
+    double t0 = cv::getTickCount();
 	writeBMP("bmp_color.bmp", imcolor.cols, imcolor.rows, imcolor.channels(), imcolor.data, CV_RGB);
+    printf("write bmp color: %f ms\n", (getTickCount() - t0) / getTickFrequency() * 1000);
+    t0 = getTickCount();
 	writeBMP("bmp_gray.bmp", im.cols, im.rows, im.channels(), im.data, CV_GRAY);
+    printf("write bmp gray: %f ms\n", (getTickCount() - t0) / getTickFrequency() * 1000);
 
 	// read color and grayscale bmp
 	int w, h, c;
-	uchar* imdata = readBMP("bmp_gray.bmp", w, h, c);
-	Mat imtest(h, w, CV_8UC(c), imdata);
+	uchar* imdata_gray = readBMP("bmp_gray.bmp", w, h, c);
+	Mat imtest(h, w, CV_8UC(c), imdata_gray);
 	printf("w,h,c: %d %d %d\n", w, h, c);
-	imshow("imtest", imtest);
+	imshow("read gray", imtest);
+
+    uchar* imdata_color = readBMP("bmp_color.bmp", w, h, c);
+    Mat imtest2(h, w, CV_8UC(c), imdata_color);
+    printf("w,h,c: %d %d %d\n", w, h, c);
+    imshow("read color", imtest2);
 
 	waitKey();
 	return 0;
