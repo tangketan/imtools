@@ -15,5 +15,7 @@ TARGET_LINK_LIBRARIES(plot_sample ${OpenCV_LIBS})
 
 #MESSAGE(STATUS "OpenCV_LIBS: ${OpenCV_LIBS}")
 
+add_subdirectory(unittest)
+add_subdirectory(learn_CvLevMarq)
 
 

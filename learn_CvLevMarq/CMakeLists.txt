@@ -1,0 +1,15 @@
+PROJECT(learn_CvLevMarq)
+
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+
+FIND_PACKAGE( OpenCV REQUIRED )
+
+# Declare the target (an executable)
+ADD_EXECUTABLE(${PROJECT_NAME} learn_CvLevMarq.cpp)
+
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${OpenCV_LIBS})
+
+
+
+
+
