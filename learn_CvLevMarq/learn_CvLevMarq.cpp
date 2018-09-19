@@ -46,6 +46,8 @@ void calc_error(Mat& err, Mat& param, vector<Vec2d>& samples) {
     }
 }
 
+const char* lm_states[] = { "DONE", "STARTED", "CALC_J", "CHECK_ERR"};
+
 int main() {
     auto num = 100;
     auto xlb = 0.0;
@@ -73,12 +75,12 @@ int main() {
         CvMat* _jac = 0;
         CvMat* _err = 0;
 
+        cout << "iter=" << iter << " state=" << lm_states[solver.state]
+            << " errNorm=" << solver.errNorm << endl;
+        
         bool proceed = solver.update(_param, _jac, _err);
 
         cvCopy(_param, &param);
-
-        cout << "iter=" << iter << " state=" << solver.state
-             << " errNorm=" << solver.errNorm << endl;
 
         if (!proceed || !_err) break;
 
