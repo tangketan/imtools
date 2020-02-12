@@ -28,26 +28,39 @@ html写文档。</p>
 <p>在需要比较两个图片的地方，只需要把下面这段代码嵌入html网页即可。注意要把图片的路径改成你的真实图片路径。</p>
 <p>image_zoom主要包括2个部分：
   <ol>
-    <li>html文档：定义了canvas和caption，用来显示图片以及标题</li>
-    <li>javascript脚本：定义了鼠标事件，包括点击图片后拖动，滚动鼠标滚轮放大/缩小图片。</li>
+    <li>html文档：在一个表格中放入了canvas和caption，用来显示图片以及标题。使用时用户需要自己根据需要修改这部分代码。<br/>
+      可以将canvas按任意的形式排列，例如可以1x3，也可以2x2。图片和标题的大小都可以自动适应。<br/>
+      排列时canvas和caption必须保持一致。
+    </li>
+    <li>javascript脚本：定义了鼠标事件，包括点击图片后拖动，滚动鼠标滚轮放大/缩小图片。这部分代码是不需要用户修改的。</li>
   </ol>
 </p>
 
 
-<p>
-  <textarea rows=15 cols=100>
-    <table>
+<p style="text-align:center">
+  <textarea rows=24 cols=150>
+    <table id="compare1">
       <tr>
-              <th id="caption">left to compare</th>
-              <th id="caption2">right to compare</th>
+              <td>left image: <input type="text" class="caption" size=80/></td>
+              <td>right image: <input type="text" class="caption" size=80/></td></tr>
+
+      <tr><td>    <button id="btn_fit" onclick="fitImage(event);">适应页面</button>
+        <button id="btn_load" onclick="loadImage(event);">重新载入</button></td>
       </tr>
       <tr>
-              <td><canvas id="canvas" width="600" height="500"  title="me.jpg" data-imgX="-400" data-imgY="-100" data-imgScale="0.8"></canvas>
-              <td><canvas id="canvas2" width="600" height="500" title="me2.jpg"></canvas>
+              <td><canvas width="600" height="500" title="pics/me.jpg" data-pos="-400,-100,0.8"></canvas>
+              <td><canvas width="600" height="500" title="pics/me2.jpg"></canvas></td></tr>
+      <tr>
+        <td>right image: <input type="text" class="caption" size=80/></td>
+        <td>right image: <input type="text" class="caption" size=80/></td>
       </tr>
-      <tr><td id="posInfo">pos and scale</td>        </tr>
-      </table>
-      <script type="text/javascript" src="image_zoom3.js"></script>
+      <tr>
+        <td><canvas width="600" height="500" title="pics/me3.jpg"></canvas>
+          <td><canvas width="600" height="500" title="pics/me2.jpg"></canvas>
+      </tr>
+      <tr><td class="PoseInfo">pos and scale</td>        </tr>
+      <script type="text/javascript">drawAllCanvas("compare1");</script>
+    </table>
 </textarea>
 </p>
 <h2>各参数的含义</h2>
@@ -58,19 +71,24 @@ html写文档。</p>
 <li>data-imgX, data-imgY, data-imgScale: 对比图像的初始位置及尺度</li>
 </oi>
 <!-- <button onclick="window.open('image_zoom_canvas2.html');">点击看大图对比</button> -->
-<table id="compare1">
+<table id="compare1" onload="alert('table loaded');">
   <tr>
-          <th>left image: <input type="text" class="caption" size=80/></th>
-          <th>right image: <input type="text" class="caption" size=80/></th>
-          <th>right image: <input type="text" class="caption" size=80/></th>
-  </tr>
+          <td>left image: <input type="text" class="caption" size=80/></td>
+          <td>right image: <input type="text" class="caption" size=80/></td></tr>
+
   <tr><td>    <button id="btn_fit" onclick="fitImage(event);">适应页面</button>
     <button id="btn_load" onclick="loadImage(event);">重新载入</button></td>
   </tr>
   <tr>
           <td><canvas width="600" height="500" title="pics/me.jpg" data-pos="-400,-100,0.8"></canvas>
-          <td><canvas width="600" height="500" title="pics/me2.jpg"></canvas>
-          <td><canvas width="600" height="500" title="pics/me3.jpg"></canvas>
+          <td><canvas width="600" height="500" title="pics/me2.jpg"></canvas></td></tr>
+  <tr>
+    <td>right image: <input type="text" class="caption" size=80/></td>
+    <td>right image: <input type="text" class="caption" size=80/></td>
+  </tr>
+  <tr>
+    <td><canvas width="600" height="500" title="pics/me3.jpg"></canvas>
+      <td><canvas width="600" height="500" title="pics/me2.jpg"></canvas>
   </tr>
   <tr><td class="PoseInfo">pos and scale</td>        </tr>
   <script type="text/javascript">drawAllCanvas("compare1");</script>
@@ -78,8 +96,8 @@ html写文档。</p>
 
 <table id="compare2">
   <tr>
-          <th>left image: <input type="text" class="caption" size=80/></th>
-          <th>right image: <input type="text" class="caption" size=80/></th>
+          <td>left image: <input type="text" class="caption" size=80/></td>
+          <td>right image: <input type="text" class="caption" size=80/></td>
   </tr>
   <tr><td>    <button id="btn_fit" onclick="fitImage(event);">适应页面</button>
     <button id="btn_load" onclick="loadImage(event);">重新载入</button></td>
@@ -102,8 +120,8 @@ html写文档。</p>
     <li><b>如何确定这三个属性应该怎么设置？</b>
       当我们拖动或缩放图片时，表格的最后一行，<b>image pos and scale</b>，会实时显示当前的imgX,imgY,imgScale这3个值。
     </li>
-    <li><b>交换左右图：</b>右键点击某个图片即可交换当前图与下一张图（如果当前图是最后一张，则交换当前图与第一张图），放开右键还原</li>
-    <li><b>适应窗口大小：</b>点击fit按钮可使左右图适应窗口大小</li>
+    <li><b>交换左右图：</b>shift+左键点击某个图片即可交换当前图与下一张图（如果当前图是最后一张，则交换当前图与第一张图），放开左键还原</li>
+    <li><b>适应窗口大小：</b>点击“适应页面”按钮可使所有图适应窗口大小</li>
   </ul>
 </p>
 <h1>如何插入表格</h1>

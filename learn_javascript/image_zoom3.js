@@ -6,14 +6,15 @@ function drawAllCanvas(tableID){
     var imgs = new Array(canvases.length);
     var captions = table.getElementsByClassName("caption");
     var posInfo = table.getElementsByClassName("PoseInfo")[0];
+    var numCols = table.rows[0].cells.length; // 获取表格列数
     for(var i=0; i< canvases.length; i++)
     {
         canvas = canvases[i];
-        canvas.width = screen.width/canvases.length-50;
+        canvas.width = screen.width/numCols-50;
         contexts[i]=canvas.getContext('2d');
         canvas.tabIndex = i;
         canvas.canvases = canvases;  // add extra attributes to access all canvases
-        captions[i].setAttribute("size", 160/captions.length);
+        captions[i].setAttribute("size", 160/numCols);
         canvas.caption = captions[i];
         canvas.addEventListener("mousedown", mouse_down, false);
     }
@@ -65,7 +66,7 @@ function drawImage(canvases){
 function mouse_down(event){
     var canvas = event.target || event.srcElement;
     var canvases = canvas.canvases;
-    if(event.button==0){
+    if(event.shiftKey==0){
         // 左键按下拖动
         var pos=windowToCanvas(canvas,event.clientX,event.clientY);
         canvas.onmousemove=function(event){
@@ -84,8 +85,8 @@ function mouse_down(event){
             canvas.style.cursor="default";
         };
     }
-    else if(event.button==2){
-        // 右键点击切换当前图与下一张图
+    else{
+        // shift+左键点击切换当前图与下一张图
         var canvas_index = canvas.tabIndex;
         switchImage(canvases, canvas_index, canvas_index+1);
         canvas.onmouseup=function(){drawImage(canvases);};
