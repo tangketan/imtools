@@ -9,11 +9,13 @@
             canvas{border: 1px solid #000;
                 margin-left: 2px;
                 margin-right: 2px;}
+            pre{background: #aaa;}
         </style>
         <script src="image_zoom3.js"></script>
         <script src="./node_modules/html-table-of-contents/src/html-table-of-contents.js">        </script>
         <link rel="stylesheet"   type="text/css"
                 href="./node_modules/html-table-of-contents/html-table-of-contents.css" />
+        <script src="load_mathjax.js" async></script>
     </head>
 <body onLoad="htmlTableOfContents();">
 <div style="font-size: 2em; text-align: center; font-weight: bold;">使用image_zoom做汇报方案</div>
@@ -146,5 +148,30 @@ html写文档。</p>
             <td>&nbsp;</td>
           </tr>
         </table>
+
+<h1>如何插入公式</h1>
+<p>可以使用MathJax来插入公式。  首先要在head中插入load_math.js，其内容是这样的：</p>
+<p>
+  <pre>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+
+    (function () {
+      var script = document.createElement('script');
+      script.src = './node_modules/mathjax/es5/tex-chtml.js';
+      script.async = true;
+      document.head.appendChild(script);
+    })();
+  </pre>
+  </p>
+<p>  然后在需要写入公式的地方插入Latex代码即可。例如这样：<pre>$y=a^2+\sin{\pi/2}$</pre> ->
+  $y=a^2+\sin{\pi/2}$
+</p>
 </body onload="htmlTableOfContents();">
 </html>
