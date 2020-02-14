@@ -11,13 +11,13 @@
                 margin-right: 2px;}
             pre{background: #aaa;}
         </style>
-        <script src="image_zoom3.js"></script>
+        <script src="./node_modules/image_zoom/image_zoom3.js"></script>
         <script src="./node_modules/html-table-of-contents/src/html-table-of-contents.js">        </script>
         <link rel="stylesheet"   type="text/css"
                 href="./node_modules/html-table-of-contents/html-table-of-contents.css" />
         <script src="load_mathjax.js" async></script>
     </head>
-<body onLoad="htmlTableOfContents();">
+<body onLoad="htmlTableOfContents(); drawAllTables();">
 <div style="font-size: 2em; text-align: center; font-weight: bold;">使用image_zoom做汇报方案</div>
 <p><b>Contents</b> </p>
 <div id="toc">        </div>
@@ -28,9 +28,11 @@
 有时还需要将两种不同方法的结果进行比较，包括放大，拖拽，等待。这种有交互需求的展示，用word或PPT都是很不方便，因此我写了这样一个工具，来使用
 html写文档。</p>
 <p>在需要比较两个图片的地方，只需要把下面这段代码嵌入html网页即可。注意要把图片的路径改成你的真实图片路径。</p>
+<p>在body的onload函数中写了drawAllTables();这个函数用来查找网页中所有的TabbleComp对象，并将图片画出来。</p>
 <p>image_zoom主要包括2个部分：
   <ol>
     <li>html文档：在一个表格中放入了canvas和caption，用来显示图片以及标题。使用时用户需要自己根据需要修改这部分代码。<br/>
+      表格的类型必须为 class="TableComp"，否则无法正常显示。id可以省略。<br/>
       可以将canvas按任意的形式排列，例如可以1x3，也可以2x2。图片和标题的大小都可以自动适应。<br/>
       排列时canvas和caption必须保持一致。
     </li>
@@ -41,7 +43,7 @@ html写文档。</p>
 
 <p style="text-align:center">
   <textarea rows=24 cols=150>
-    <table id="compare1">
+    <table id="compare1" class="TableComp">
       <tr>
               <td>left image: <input type="text" class="caption" size=80/></td>
               <td>right image: <input type="text" class="caption" size=80/></td></tr>
@@ -61,7 +63,6 @@ html写文档。</p>
           <td><canvas width="600" height="500" title="pics/me2.jpg"></canvas>
       </tr>
       <tr><td class="PoseInfo">pos and scale</td>        </tr>
-      <script type="text/javascript">drawAllCanvas("compare1");</script>
     </table>
 </textarea>
 </p>
@@ -73,7 +74,7 @@ html写文档。</p>
 <li>data-imgX, data-imgY, data-imgScale: 对比图像的初始位置及尺度</li>
 </oi>
 <!-- <button onclick="window.open('image_zoom_canvas2.html');">点击看大图对比</button> -->
-<table id="compare1" onload="alert('table loaded');">
+<table id="compare1" class="TableComp">
   <tr>
           <td>left image: <input type="text" class="caption" size=80/></td>
           <td>right image: <input type="text" class="caption" size=80/></td></tr>
@@ -93,10 +94,9 @@ html写文档。</p>
       <td><canvas width="600" height="500" title="pics/me2.jpg"></canvas>
   </tr>
   <tr><td class="PoseInfo">pos and scale</td>        </tr>
-  <script type="text/javascript">drawAllCanvas("compare1");</script>
 </table>
 
-<table id="compare2">
+<table id="compare2" class="TableComp">
   <tr>
           <td>left image: <input type="text" class="caption" size=80/></td>
           <td>right image: <input type="text" class="caption" size=80/></td>
@@ -109,7 +109,6 @@ html写文档。</p>
           <td><canvas width="600" height="500" title="E:\照片\希希\IMG_1640.JPG"></canvas>
   </tr>
   <tr><td class="PoseInfo">pos and scale</td>        </tr>
-  <script type="text/javascript">drawAllCanvas("compare2");</script>
 </table>
 
 <h1>image_zoom如何使用</h1>
