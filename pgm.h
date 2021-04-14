@@ -12,6 +12,6 @@ unsigned char* readPGM(const char* fname, int& width, int& height, bool is_plain
 template<typename T>
 bool writePGM(const char* fname, cv::Mat im, bool is_plainPGM);
 
-template<typename T>
-cv::Mat readPGM(const char* fname, bool is_plainPGM);
+cv::Mat readPGM(const std::string fname);
+
 #endif
